@@ -107,16 +107,25 @@ func psnLogin(args []string) {
 	fmt.Println()
 	fmt.Println(psn.LoginURL())
 	fmt.Println()
-	fmt.Println("2) Depois do login a página fica em branco/erro. Copie a URL inteira da barra")
-	fmt.Println("   (começa com https://remoteplay.dl.playstation.net/remoteplay/redirect?code=...) e cole aqui:")
-	fmt.Print("> ")
-	line, err := bufio.NewReader(os.Stdin).ReadString('\n')
-	if err != nil {
-		fatal(err)
-	}
-	code, err := psn.CodeFromRedirect(line)
-	if err != nil {
-		fatal(err)
+	fmt.Println("2) Depois do login aparece uma página branca escrita \"redirect\".")
+	fmt.Println("   Clique na barra de endereço (⌘L), copie (⌘C) e cole aqui a URL inteira")
+	fmt.Println("   (https://remoteplay.dl.playstation.net/remoteplay/redirect?code=...) — ou só o código.")
+	reader := bufio.NewReader(os.Stdin)
+	var code string
+	for attempt := 1; ; attempt++ {
+		fmt.Print("> ")
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			fatal(err)
+		}
+		if code, err = psn.CodeFromRedirect(line); err == nil {
+			break
+		}
+		fmt.Println("   ✗", err)
+		if attempt == 3 {
+			fatal(fmt.Errorf("desisti após 3 tentativas; rode relay psn-login de novo"))
+		}
+		fmt.Println("   Tente colar de novo (o código vale poucos minutos):")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

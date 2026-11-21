@@ -50,19 +50,37 @@ func LoginURL() string {
 }
 
 // CodeFromRedirect extrai o "code" da URL de redirecionamento colada pelo anfitrião.
-func CodeFromRedirect(redirect string) (string, error) {
-	u, err := url.Parse(strings.TrimSpace(redirect))
+// Aceita também só o código (caso o navegador não copie a URL inteira).
+func CodeFromRedirect(input string) (string, error) {
+	in := strings.TrimSpace(input)
+	if in == "" {
+		return "", errors.New("nada foi colado")
+	}
+	if !strings.Contains(in, "://") {
+		if strings.ContainsAny(in, " ?&=/") {
+			return "", errors.New("isso não parece nem a URL nem o código")
+		}
+		return in, nil // só o código
+	}
+	u, err := url.Parse(in)
 	if err != nil {
 		return "", err
 	}
 	if !strings.HasPrefix(u.Scheme+"://"+u.Host+u.Path, redirectURI) {
 		return "", errors.New("URL não é o redirecionamento do Remote Play")
 	}
-	code := u.Query().Get("code")
-	if code == "" {
-		return "", errors.New("URL sem o parâmetro code")
+	q := u.Query()
+	if e := q.Get("error"); e != "" {
+		return "", fmt.Errorf("a Sony recusou o login (%s) — tente de novo", e)
 	}
-	return code, nil
+	if code := q.Get("code"); code != "" {
+		return code, nil
+	}
+	names := make([]string, 0, len(q))
+	for k := range q {
+		names = append(names, k)
+	}
+	return "", fmt.Errorf("a URL chegou sem o valor do code (parâmetros recebidos: %v) — a cópia veio cortada", names)
 }
 
 type Token struct {

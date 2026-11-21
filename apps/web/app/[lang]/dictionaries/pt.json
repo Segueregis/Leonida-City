@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "title": "LeonidaPlay — Jogue GTA 6 sem ter um PS5",
+    "description": "Alugue tempo de jogo em um PS5 real e jogue GTA 6 Online pelo navegador. Tem um PS5? Ganhe dinheiro com ele quando estiver parado."
+  },
+  "nav": {
+    "how": "Como funciona",
+    "prices": "Preços",
+    "host": "Seja anfitrião",
+    "faq": "Dúvidas",
+    "cta": "Entrar na lista"
+  },
+  "hero": {
+    "badge": "Beta fechado · Brasil",
+    "title1": "Jogue GTA 6",
+    "title2": "sem ter um PS5.",
+    "subtitle": "Alugue tempo em um PS5 de verdade e jogue pelo navegador — no PC simples, notebook ou celular. Sem instalar nada. Pague com Pix.",
+    "ctaPlayer": "Quero jogar",
+    "ctaHost": "Tenho um PS5",
+    "note": "Vagas do beta limitadas. Entre na lista e avisamos você primeiro."
+  },
+  "how": {
+    "title": "Como funciona",
+    "steps": [
+      { "title": "Escolha um console", "text": "Veja os PS5 disponíveis perto de você. Testamos sua conexão antes de você pagar." },
+      { "title": "Recarregue com Pix", "text": "Coloque créditos na carteira em segundos. A partir de R$ 7,50." },
+      { "title": "Jogue no navegador", "text": "Use um controle no PC ou os botões na tela do celular. O tempo só começa a contar quando o jogo aparece." }
+    ]
+  },
+  "prices": {
+    "title": "Preços simples",
+    "subtitle": "Sem assinatura. Caiu por culpa do anfitrião? Devolvemos os minutos que faltaram, automaticamente.",
+    "test": "Teste",
+    "popular": "Mais escolhido",
+    "combo": "Combo",
+    "minutes": "min",
+    "hour": "hora",
+    "hours": "horas"
+  },
+  "host": {
+    "title": "Seu PS5 parado pode render dinheiro",
+    "subtitle": "Enquanto você trabalha ou dorme, outro jogador usa seu console — numa conta secundária, sem acesso à sua conta principal nem ao seu cartão.",
+    "points": [
+      "Você fica com 80% de cada hora alugada",
+      "Pagamento via Pix toda sexta-feira",
+      "Precisa só do PS5 e de internet boa — nada para instalar",
+      "Você escolhe quando o console fica disponível"
+    ],
+    "calcTitle": "Quanto você pode ganhar",
+    "calcHours": "Horas alugadas por dia",
+    "calcPerMonth": "por mês (estimativa)",
+    "calcNote": "Estimativa com pacotes de 1 hora (R$ 16 para você por hora). Não é garantia de ganho."
+  },
+  "form": {
+    "title": "Entre na lista de espera",
+    "subtitle": "Os primeiros da lista entram no beta.",
+    "tabPlayer": "Quero jogar",
+    "tabHost": "Quero ser anfitrião",
+    "email": "E-mail",
+    "name": "Nome",
+    "city": "Cidade",
+    "state": "Estado",
+    "statePlaceholder": "UF",
+    "device": "Onde você vai jogar?",
+    "devices": { "PC": "PC", "NOTEBOOK": "Notebook", "CELULAR": "Celular", "TABLET": "Tablet", "TV": "Smart TV" },
+    "consoleModel": "Modelo do PS5",
+    "consoleModels": { "PS5": "PS5 (com leitor)", "PS5_DIGITAL": "PS5 Digital", "PS5_PRO": "PS5 Pro" },
+    "hasGame": "Já tem o GTA 6?",
+    "yes": "Sim",
+    "no": "Ainda não",
+    "upload": "Velocidade de upload da sua internet",
+    "uploadHint": "Faça o teste em fast.com e clique em \"Mais informações\".",
+    "uploadDontKnow": "Não sei",
+    "hours": "Quantas horas por dia o PS5 fica livre?",
+    "whatsapp": "WhatsApp (opcional)",
+    "beta": "Quero testar o beta antes de todo mundo",
+    "consent": "Concordo em receber contato do LeonidaPlay sobre o lançamento e com o tratamento dos meus dados para isso (LGPD). Posso sair a qualquer momento.",
+    "submit": "Entrar na lista",
+    "submitting": "Enviando…",
+    "successPlayer": "Pronto! Você está na lista. Avisamos por e-mail quando abrir uma vaga.",
+    "successHost": "Pronto! Recebemos seu cadastro de anfitrião. Vamos entrar em contato para o beta.",
+    "errors": {
+      "email": "Informe um e-mail válido.",
+      "consent": "É preciso aceitar para entrar na lista.",
+      "invalid": "Confira os campos destacados.",
+      "rate": "Muitas tentativas. Tente de novo em alguns minutos.",
+      "server": "Algo deu errado. Tente de novo."
+    }
+  },
+  "faq": {
+    "title": "Dúvidas frequentes",
+    "items": [
+      { "q": "Preciso instalar alguma coisa?", "a": "Não. Você joga direto no navegador (Chrome, Edge ou Safari recente). Funciona com controle de PS, Xbox ou genérico no PC, e com botões na tela no celular." },
+      { "q": "Qual internet eu preciso para jogar?", "a": "Recomendamos 15 Mbps estáveis, de preferência cabo ou Wi‑Fi 5 GHz. Antes de pagar, medimos a latência até o console e mostramos se a conexão está boa." },
+      { "q": "O jogador tem acesso à minha conta da PSN?", "a": "Não. O jogador usa uma conta secundária no seu PS5, com limite de gastos zero. Ele nunca vê seu e-mail, senha ou cartão, e os botões que abrem o menu do sistema ficam bloqueados." },
+      { "q": "Como recebo como anfitrião?", "a": "Você fica com 80% de cada sessão. As sessões ficam 24 h em análise (para casos de queda) e o valor é pago via Pix toda sexta-feira." },
+      { "q": "E se a conexão cair no meio do jogo?", "a": "Se a queda for do lado do anfitrião, devolvemos automaticamente os minutos que faltaram como crédito na sua carteira." },
+      { "q": "Quando lança?", "a": "Estamos em beta fechado no Brasil. Quem está na lista de espera recebe o convite primeiro." }
+    ]
+  },
+  "footer": {
+    "tagline": "Jogue na nova geração sem ter o console — ou ganhe dinheiro alugando o seu.",
+    "disclaimer": "LeonidaPlay é um serviço independente e não é afiliado, patrocinado ou endossado pela Sony Interactive Entertainment, PlayStation ou Rockstar Games. Todas as marcas pertencem aos seus respectivos donos.",
+    "rights": "Todos os direitos reservados."
+  }
+}

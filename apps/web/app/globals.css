@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* Identidade LeonidaPlay: noite neon de Leonida — fundo quase preto, pôr do sol rosa/roxo, ciano elétrico. */
+@theme {
+  --color-ink: #0b0c10;
+  --color-panel: #13141b;
+  --color-line: #262840;
+  --color-fg: #ececf4;
+  --color-muted: #9d9db8;
+  --color-pink: #ff2a85;
+  --color-purple: #7928ca;
+  --color-cyan: #00f0ff;
+  --color-sun: #ffb36b;
+
+  --font-display: var(--font-unbounded), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-pink);
+  color: white;
+}
+
+/* Sol listrado do horizonte */
+.sun {
+  background: linear-gradient(180deg, var(--color-sun) 0%, var(--color-pink) 55%, var(--color-purple) 100%);
+  mask-image: linear-gradient(
+    180deg,
+    #000 0 52%,
+    transparent 52% 56%,
+    #000 56% 64%,
+    transparent 64% 68%,
+    #000 68% 75%,
+    transparent 75% 80%,
+    #000 80% 86%,
+    transparent 86% 92%,
+    #000 92%
+  );
+  filter: drop-shadow(0 0 60px rgb(255 42 133 / 0.45));
+}
+
+/* Chão em grade com perspectiva */
+.grid-floor {
+  background-image:
+    linear-gradient(to right, rgb(0 240 255 / 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 240 255 / 0.35) 1px, transparent 1px);
+  background-size: 64px 48px;
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: top center;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 85%);
+  animation: floor 3s linear infinite;
+}
+
+@keyframes floor {
+  to {
+    background-position: 0 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .grid-floor {
+    animation: none;
+  }
+}
+
+.glow-text {
+  text-shadow:
+    0 0 24px rgb(255 42 133 / 0.55),
+    0 0 64px rgb(121 40 202 / 0.45);
+}

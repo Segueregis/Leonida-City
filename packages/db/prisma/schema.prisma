@@ -758,3 +758,42 @@ model AdminAuditLog {
 
   @@index([targetType, targetId])
 }
+
+// -----------------------------------------------------------------------------
+// Lista de espera (landing page) — valida demanda e recruta os primeiros anfitriões
+// -----------------------------------------------------------------------------
+
+enum WaitlistKind {
+  PLAYER
+  HOST
+}
+
+model WaitlistEntry {
+  id           String        @id @default(cuid())
+  kind         WaitlistKind
+  email        String
+  name         String?
+  city         String?
+  state        String? // UF
+  countryCode  String? // detectado pelo header da Vercel
+  locale       String
+  // Jogador
+  device       String? // "PC" | "NOTEBOOK" | "CELULAR" | "TV" | "TABLET"
+  // Anfitrião
+  consoleModel ConsoleModel?
+  hasGame      Boolean?
+  uploadMbps   String? // faixa declarada: "<10" | "10-20" | "20-50" | "50+"
+  hoursPerDay  Int?
+  betaTester   Boolean       @default(false)
+  whatsapp     String?
+  // LGPD / origem
+  consentAt    DateTime
+  ipHash       String? // sha256(ip + salt) — antiabuso sem guardar IP
+  userAgent    String?
+  utmSource    String?
+  createdAt    DateTime      @default(now())
+
+  @@unique([kind, email])
+  @@index([kind, createdAt])
+  @@index([ipHash, createdAt])
+}

@@ -26,10 +26,16 @@ func TestCodeFromRedirect(t *testing.T) {
 	if err != nil || code != "AbC123" {
 		t.Fatalf("code=%q err=%v", code, err)
 	}
+	if code, err := CodeFromRedirect("  v3.AbC_123-x \n"); err != nil || code != "v3.AbC_123-x" {
+		t.Fatalf("código puro: code=%q err=%v", code, err)
+	}
 	for _, bad := range []string{
 		"https://evil.example.com/remoteplay/redirect?code=AbC123",
 		"https://remoteplay.dl.playstation.net/remoteplay/redirect?nocode=1",
-		"not a url %%",
+		"https://remoteplay.dl.playstation.net/remoteplay/redirect?code=",
+		"https://remoteplay.dl.playstation.net/remoteplay/redirect?error=access_denied",
+		"",
+		"isso tem espaço",
 	} {
 		if _, err := CodeFromRedirect(bad); err == nil {
 			t.Errorf("aceitou %q", bad)
