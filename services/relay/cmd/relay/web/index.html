@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeonidaPlay — teste do relay</title>
+<style>
+  :root { --bg:#0B0C10; --fg:#e8e8ef; --pink:#FF2A85; --purple:#7928CA; --cyan:#00F0FF; --muted:#8a8aa0; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.4 system-ui, sans-serif; padding:16px; }
+  h1 { font-size:18px; margin:0 0 12px; background:linear-gradient(90deg,var(--pink),var(--purple),var(--cyan)); -webkit-background-clip:text; color:transparent; }
+  textarea { width:100%; height:64px; background:#15161c; color:var(--fg); border:1px solid #2a2b35; border-radius:6px; padding:8px; font:12px monospace; }
+  button { background:var(--pink); color:#fff; border:0; border-radius:6px; padding:8px 16px; font-weight:600; cursor:pointer; margin:8px 8px 8px 0; }
+  button.secondary { background:#2a2b35; }
+  video { width:100%; max-width:1280px; aspect-ratio:16/9; background:#000; border-radius:8px; display:block; }
+  #hud { display:flex; flex-wrap:wrap; gap:16px; margin:8px 0; color:var(--muted); font-variant-numeric:tabular-nums; }
+  #hud b { color:var(--cyan); }
+  #banner { padding:8px 12px; border-radius:6px; margin:8px 0; display:none; }
+  #banner.warn { display:block; background:#3a2a00; color:#ffd166; }
+  #banner.end { display:block; background:#3a0016; color:var(--pink); }
+  #log { font:12px monospace; color:var(--muted); white-space:pre-wrap; max-height:160px; overflow:auto; }
+</style>
+</head>
+<body>
+<h1>LeonidaPlay · teste do relay (spike F0)</h1>
+<label>Grant (gere com <code>relay mint-grant</code>)</label>
+<textarea id="grant" placeholder="eyJhbGciOiJFZERTQSIs..."></textarea>
+<div>
+  <button id="connect">Conectar</button>
+  <button id="disconnect" class="secondary">Desconectar</button>
+</div>
+<div id="banner"></div>
+<div id="hud">
+  <span>Tempo: <b id="remaining">—</b></span>
+  <span>RTT: <b id="rtt">—</b></span>
+  <span>FPS: <b id="fps">—</b></span>
+  <span>Bitrate: <b id="kbps">—</b></span>
+  <span>Perda: <b id="loss">—</b></span>
+  <span>Controle: <b id="pad">nenhum</b></span>
+</div>
+<video id="video" autoplay playsinline muted></video>
+<div id="log"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let pc, inputCh, expiresAt, timers = [];
+const log = (m) => { $("log").textContent = new Date().toLocaleTimeString() + "  " + m + "\n" + $("log").textContent; };
+
+// Layout dos bits igual ao ChiakiControllerButton
+const BTN = { cross:1<<0, moon:1<<1, box:1<<2, pyramid:1<<3, left:1<<4, right:1<<5, up:1<<6, down:1<<7,
+              l1:1<<8, r1:1<<9, l3:1<<10, r3:1<<11, options:1<<12, share:1<<13, touchpad:1<<14, ps:1<<15 };
+// Mapeamento "standard" da Gamepad API → botões PlayStation
+const MAP = [BTN.cross, BTN.moon, BTN.box, BTN.pyramid, BTN.l1, BTN.r1, null, null,
+             BTN.share, BTN.options, BTN.l3, BTN.r3, BTN.up, BTN.down, BTN.left, BTN.right, BTN.ps, BTN.touchpad];
+
+function readPad() {
+  const pad = [...navigator.getGamepads()].find(Boolean);
+  if (!pad) return null;
+  let buttons = 0;
+  pad.buttons.forEach((b, i) => { if (b.pressed && MAP[i]) buttons |= MAP[i]; });
+  const ax = (v) => Math.max(-32768, Math.min(32767, Math.round(v * 32767)));
+  const buf = new DataView(new ArrayBuffer(16));
+  buf.setUint32(0, buttons);
+  buf.setUint8(4, Math.round((pad.buttons[6]?.value || 0) * 255));
+  buf.setUint8(5, Math.round((pad.buttons[7]?.value || 0) * 255));
+  buf.setInt16(6, ax(pad.axes[0] || 0)); buf.setInt16(8, ax(pad.axes[1] || 0));
+  buf.setInt16(10, ax(pad.axes[2] || 0)); buf.setInt16(12, ax(pad.axes[3] || 0));
+  $("pad").textContent = pad.id.slice(0, 32);
+  return buf.buffer;
+}
+
+let lastSent = "";
+function inputLoop() {
+  if (!inputCh || inputCh.readyState !== "open") return;
+  const state = readPad();
+  if (state) {
+    const key = new Uint8Array(state).join(",");
+    // envia ao mudar e, no mínimo, a cada ~100 ms (keep-alive)
+    if (key !== lastSent || performance.now() - (inputLoop.t || 0) > 100) {
+      inputCh.send(state); lastSent = key; inputLoop.t = performance.now();
+    }
+  }
+}
+
+let prev = null;
+async function statsLoop() {
+  if (!pc) return;
+  const stats = await pc.getStats();
+  stats.forEach((r) => {
+    if (r.type === "candidate-pair" && r.nominated && r.currentRoundTripTime !== undefined)
+      $("rtt").textContent = Math.round(r.currentRoundTripTime * 1000) + " ms";
+    if (r.type === "inbound-rtp" && r.kind === "video") {
+      $("fps").textContent = r.framesPerSecond ?? "—";
+      if (prev) {
+        const kbps = ((r.bytesReceived - prev.bytes) * 8) / ((r.timestamp - prev.ts));
+        $("kbps").textContent = Math.round(kbps) + " kbps";
+        const lost = r.packetsLost - prev.lost, recv = r.packetsReceived - prev.recv;
+        $("loss").textContent = recv + lost > 0 ? ((100 * lost) / (recv + lost)).toFixed(2) + "%" : "0%";
+      }
+      prev = { bytes: r.bytesReceived, ts: r.timestamp, lost: r.packetsLost, recv: r.packetsReceived };
+    }
+  });
+  if (expiresAt) {
+    const s = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+    $("remaining").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  }
+}
+
+function banner(cls, text) { const b = $("banner"); b.className = cls; b.textContent = text; }
+
+async function connect() {
+  disconnect();
+  pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+  pc.addTransceiver("video", { direction: "recvonly" });
+  pc.addTransceiver("audio", { direction: "recvonly" });
+  // input: sem retransmissão nem ordem — estado mais recente vence
+  inputCh = pc.createDataChannel("input", { ordered: false, maxRetransmits: 0 });
+  const control = pc.createDataChannel("control");
+  control.onmessage = (e) => {
+    log("relay: " + e.data);
+    const m = JSON.parse(e.data);
+    if (m.t === "expiring") banner("warn", `Seu tempo acaba em ${m.remainingSeconds} s`);
+    if (m.t === "ended") banner("end", "Sessão encerrada: tempo esgotado");
+  };
+  pc.ontrack = (e) => {
+    const v = $("video");
+    if (!v.srcObject) v.srcObject = new MediaStream();
+    v.srcObject.addTrack(e.track);
+  };
+  pc.onconnectionstatechange = () => log("peer: " + pc.connectionState);
+
+  await pc.setLocalDescription(await pc.createOffer());
+  await new Promise((ok) => {
+    if (pc.iceGatheringState === "complete") return ok();
+    pc.onicegatheringstatechange = () => pc.iceGatheringState === "complete" && ok();
+    setTimeout(ok, 3000);
+  });
+  const res = await fetch("/offer", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ grant: $("grant").value.trim(), sdp: pc.localDescription.sdp }) });
+  if (!res.ok) { log("erro: " + res.status + " " + (await res.text())); return; }
+  const ans = await res.json();
+  expiresAt = new Date(ans.expiresAt).getTime();
+  await pc.setRemoteDescription({ type: "answer", sdp: ans.sdp });
+  timers.push(setInterval(inputLoop, 8), setInterval(statsLoop, 1000));
+  $("video").muted = false;
+  log("conectado; expira em " + new Date(expiresAt).toLocaleTimeString());
+}
+
+function disconnect() {
+  timers.forEach(clearInterval); timers = [];
+  if (pc) pc.close();
+  pc = inputCh = null; prev = null;
+  $("video").srcObject = null;
+}
+
+$("connect").onclick = () => connect().catch((e) => log("erro: " + e));
+$("disconnect").onclick = disconnect;
+</script>
+</body>
+</html>

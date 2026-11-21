@@ -1,0 +1,17 @@
+node_modules/
+.next/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+packages/db/src/generated/
+services/relay/bin/
+.vercel
+services/relay/build/
+services/relay/bin/
+services/relay/.venv-build/
+services/relay/third_party/

@@ -1,0 +1,19 @@
+{
+  "name": "leonidaplay",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Marketplace P2P de cloud gaming para PS5 — MVP Brasil",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "db:validate": "npm run validate -w @leonidaplay/db",
+    "db:generate": "npm run generate -w @leonidaplay/db",
+    "db:migrate": "npm run migrate -w @leonidaplay/db",
+    "db:seed": "npm run seed -w @leonidaplay/db"
+  }
+}

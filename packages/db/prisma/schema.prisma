@@ -1,0 +1,760 @@
+// =============================================================================
+// LeonidaPlay — schema do MVP (Brasil / Pix / carteira de créditos)
+//
+// Convenções:
+// - Dinheiro SEMPRE em unidades mínimas inteiras (centavos) — campos *Minor.
+//   Nunca Float/Decimal para saldo.
+// - Saldo NUNCA é coluna mutável: é a soma das LedgerEntry da conta.
+// - Toda transição de estado de sessão gera um SessionEvent (trilha de auditoria).
+// - Percentuais em basis points (bps): 8000 = 80,00%.
+// - Credenciais PSN ficam só em ConsoleCredential, cifradas (envelope encryption).
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum Currency {
+  BRL
+  USD
+  USDT // fase 2
+}
+
+enum PaymentMethod {
+  PIX
+  USDT // fase 2
+}
+
+enum PaymentProvider {
+  MERCADO_PAGO
+  MANUAL // ajustes administrativos
+}
+
+enum PayoutMethod {
+  PIX
+  USDT // fase 2 (anfitriões fora do Brasil)
+}
+
+enum PixKeyType {
+  CPF
+  EMAIL
+  PHONE
+  RANDOM
+}
+
+enum HostStatus {
+  PENDING_ONBOARDING // cadastro incompleto
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum ConsoleModel {
+  PS5
+  PS5_DIGITAL
+  PS5_PRO
+}
+
+enum ConsoleStatus {
+  OFFLINE // relay não alcança o PS5
+  IDLE // online, disponível
+  PREPARING // acordando PS5 / abrindo o jogo
+  IN_SESSION
+  MAINTENANCE // anfitrião pausou o anúncio
+}
+
+enum RelayStatus {
+  ONLINE
+  DRAINING // não recebe novas sessões
+  OFFLINE
+}
+
+// Máquina de estados da SESSÃO (independente de dinheiro/repasse)
+enum SessionStatus {
+  REQUESTED
+  FUNDS_HELD // valor movido da carteira para a retenção
+  HOST_PREPARING // relay acordando PS5 e abrindo GTA 6 Online
+  READY // aguardando o jogador conectar (timeout 3 min)
+  ACTIVE // cronômetro rodando (iniciou no 1º frame jogável)
+  INTERRUPTED // queda; janela de reconexão de 90 s
+  EXPIRING // T-60 s, aviso ao jogador
+  ENDED // terminou normalmente (tempo esgotado ou jogador saiu)
+  ENDED_EARLY // queda sem reconexão — cobrança proporcional
+  HOST_FAILED // nunca ficou jogável por culpa do anfitrião — estorno total
+  CANCELLED // cancelada antes de começar
+}
+
+// Máquina de estados da LIQUIDAÇÃO (por sessão)
+enum SettlementStatus {
+  NOT_APPLICABLE // sessão sem valor capturado (cancelada/estorno total)
+  PENDING // sessão ainda não terminou
+  HOLD // 24 h de retenção
+  DISPUTED
+  SETTLED // valor do anfitrião liberado para o próximo repasse de sexta
+  REVERSED // revertido após disputa
+}
+
+enum EndReason {
+  TIME_UP
+  PLAYER_LEFT
+  HOST_CONSOLE_OFFLINE
+  HOST_NETWORK
+  PLAYER_NETWORK
+  RELAY_FAILURE
+  READY_TIMEOUT // jogador não conectou a tempo
+  ADMIN_TERMINATED
+  POLICY_VIOLATION
+}
+
+enum FaultParty {
+  NONE
+  HOST
+  PLAYER
+  PLATFORM
+  UNKNOWN
+}
+
+enum TopUpStatus {
+  PENDING // QR Pix gerado
+  PAID
+  EXPIRED
+  FAILED
+  REFUNDED // devolvido via Pix (direito do consumidor, sob pedido)
+}
+
+enum PayoutBatchStatus {
+  DRAFT // gerado automaticamente na sexta
+  APPROVED // aprovado pelo admin
+  PROCESSING
+  COMPLETED
+  PARTIALLY_FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED_REFUND
+  RESOLVED_PARTIAL
+  REJECTED
+}
+
+enum LedgerAccountType {
+  // Contas de usuário
+  PLAYER_WALLET // saldo disponível do jogador
+  PLAYER_HOLD // valor retido durante a sessão
+  HOST_PENDING // ganho do anfitrião em retenção (24 h / disputa)
+  HOST_AVAILABLE // ganho liberado, entra no próximo repasse
+  // Contas da plataforma
+  PLATFORM_REVENUE // comissão de 20%
+  PLATFORM_PROMO // créditos de boas-vindas / cortesia (despesa)
+  // Contrapartidas externas (dinheiro entrando/saindo do sistema)
+  EXTERNAL_PIX_IN // recargas recebidas no Mercado Pago
+  EXTERNAL_PIX_OUT // repasses enviados aos anfitriões
+  EXTERNAL_PSP_FEES // taxas do Mercado Pago
+  EXTERNAL_REFUNDS // devoluções de recarga via Pix
+}
+
+enum LedgerTransactionKind {
+  TOPUP
+  TOPUP_FEE
+  TOPUP_REFUND
+  SESSION_HOLD
+  SESSION_CAPTURE // retenção → anfitrião (80%) + plataforma (20%) + sobra volta à carteira
+  SESSION_RELEASE // estorno total da retenção
+  SETTLEMENT // HOST_PENDING → HOST_AVAILABLE
+  DISPUTE_REFUND
+  PAYOUT
+  PAYOUT_REVERSAL // Pix de repasse falhou
+  PROMO_CREDIT
+  ADJUSTMENT
+}
+
+enum TermsDocument {
+  PLAYER_TERMS
+  HOST_INTERMEDIATION_AGREEMENT // contrato de intermediação (evidência dos repasses)
+  PRIVACY_POLICY
+}
+
+enum StrikeReason {
+  HOST_FAILED_TO_START
+  CONSOLE_OFFLINE_MID_SESSION
+  HOST_NETWORK_DROP
+  CHECKLIST_VIOLATION
+}
+
+// -----------------------------------------------------------------------------
+// Região — moeda, preços, relays, pagamento e regras de repasse
+// MVP: uma única região ativa (BR-SP).
+// -----------------------------------------------------------------------------
+
+model Region {
+  id                  String          @id @default(cuid())
+  code                String          @unique // "BR-SP"
+  name                String
+  currency            Currency
+  timezone            String // "America/Sao_Paulo"
+  countryCodes        String[] // países atendidos: ["BR","PY","UY","AR"]
+  paymentMethods      PaymentMethod[]
+  payoutMethod        PayoutMethod
+  payoutWeekday       Int             @default(5) // 0=domingo … 5=sexta
+  // Sessões encerradas até o fim deste dia da semana entram no repasse (4 = quinta 23:59)
+  payoutCutoffWeekday Int             @default(4)
+  minPayoutMinor      Int             @default(2000) // R$ 20,00
+  settlementHoldHours Int             @default(24)
+  minTopUpMinor       Int             @default(750) // R$ 7,50
+  // Política de suspensão: N falhas em X dias
+  strikeThreshold     Int             @default(3)
+  strikeWindowDays    Int             @default(7)
+  active              Boolean         @default(false)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  packages    Package[]
+  relays      Relay[]
+  users       User[]
+  consoles    Console[]
+  sessions    GameSession[]
+  payoutBatch PayoutBatch[]
+}
+
+model Package {
+  id              String   @id @default(cuid())
+  regionId        String
+  code            String // "TEST_15" | "MIN_30" | "H1" | "H3"
+  durationMinutes Int
+  priceMinor      Int
+  hostShareBps    Int      @default(8000)
+  active          Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  region   Region        @relation(fields: [regionId], references: [id])
+  sessions GameSession[]
+
+  @@unique([regionId, code])
+}
+
+model Relay {
+  id              String      @id @default(cuid())
+  regionId        String
+  hostname        String      @unique
+  publicIp        String?
+  status          RelayStatus @default(OFFLINE)
+  maxSessions     Int         @default(20)
+  version         String?
+  lastHeartbeatAt DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  region   Region        @relation(fields: [regionId], references: [id])
+  sessions GameSession[]
+}
+
+// -----------------------------------------------------------------------------
+// Usuários e autenticação (modelos compatíveis com o adapter Prisma do Auth.js)
+// -----------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  locale        String    @default("pt-BR") // idioma da interface
+  countryCode   String? // detectado por IP no cadastro
+  regionId      String? // define moeda e preços (independe do idioma)
+  isAdmin       Boolean   @default(false)
+  blockedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  region            Region?            @relation(fields: [regionId], references: [id])
+  accounts          Account[]
+  authSessions      AuthSession[]
+  hostProfile       HostProfile?
+  playedSessions    GameSession[]      @relation("PlayerSessions")
+  topUps            TopUp[]
+  ledgerAccounts    LedgerAccount[]
+  disputesOpened    Dispute[]          @relation("DisputeOpenedBy")
+  disputesResolved  Dispute[]          @relation("DisputeResolvedBy")
+  termsAcceptances  TermsAcceptance[]
+  connectivity      ConnectivityTest[]
+  payoutApprovals   PayoutBatch[]
+  adminActions      AdminAuditLog[]
+  suspensionsIssued HostSuspension[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model AuthSession {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model TermsAcceptance {
+  id         String        @id @default(cuid())
+  userId     String
+  document   TermsDocument
+  version    String
+  acceptedAt DateTime      @default(now())
+  ipAddress  String?
+  userAgent  String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, document])
+}
+
+// -----------------------------------------------------------------------------
+// Anfitrião e console
+// -----------------------------------------------------------------------------
+
+model HostProfile {
+  id                String       @id @default(cuid())
+  userId            String       @unique
+  status            HostStatus   @default(PENDING_ONBOARDING)
+  legalName         String?
+  // CPF cifrado na aplicação; hash permite checar duplicidade sem decifrar
+  documentEncrypted Bytes?
+  documentHash      String?      @unique
+  payoutMethod      PayoutMethod @default(PIX)
+  pixKeyType        PixKeyType?
+  pixKeyEncrypted   Bytes?
+  pixKeyLast4       String? // exibição no painel
+  usdtAddress       String? // fase 2
+  suspendedUntil    DateTime? // cache da suspensão ativa (fonte da verdade: HostSuspension)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  user        User             @relation(fields: [userId], references: [id])
+  consoles    Console[]
+  sessions    GameSession[]    @relation("HostSessions")
+  strikes     HostStrike[]
+  suspensions HostSuspension[]
+  payouts     Payout[]
+}
+
+model Console {
+  id                     String        @id @default(cuid())
+  hostId                 String
+  regionId               String
+  nickname               String
+  model                  ConsoleModel
+  status                 ConsoleStatus @default(OFFLINE)
+  listed                 Boolean       @default(false) // anfitrião ligou o anúncio
+  gameTitle              String        @default("GTA6_ONLINE")
+  // Conta secundária usada pelos jogadores (só o Online ID público)
+  secondaryOnlineId      String?
+  characterSummary       String? // ex.: "Nível 120, 3 carros" — exibido no anúncio
+  // Checklist do onboarding (verificado no onboarding e periodicamente)
+  checkSpendingLimitZero Boolean       @default(false)
+  checkCommsRestricted   Boolean       @default(false)
+  checkConsoleSharingOn  Boolean       @default(false)
+  checkRestModeNetworkOn Boolean       @default(false)
+  checkRemotePlayOn      Boolean       @default(false)
+  checkPsPlusActive      Boolean       @default(false)
+  checklistVerifiedAt    DateTime?
+  measuredUploadMbps     Float?
+  lastSeenAt             DateTime?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  host         HostProfile        @relation(fields: [hostId], references: [id])
+  region       Region             @relation(fields: [regionId], references: [id])
+  credential   ConsoleCredential?
+  sessions     GameSession[]
+  connectivity ConnectivityTest[]
+
+  @@index([regionId, status, listed])
+}
+
+// Chaves do Remote Play + token PSN da conta secundária.
+// Envelope encryption: payload cifrado com data key; data key cifrada pela master key/KMS.
+// Só o serviço de relay decifra. A aplicação web nunca lê este conteúdo.
+model ConsoleCredential {
+  id             String    @id @default(cuid())
+  consoleId      String    @unique
+  ciphertext     Bytes // JSON cifrado: { psnAccountId, psnRefreshToken, duid } — via PSN não há PIN nem regist key
+  wrappedDataKey Bytes
+  keyId          String // identificador da master key / chave KMS
+  keyVersion     Int       @default(1)
+  createdAt      DateTime  @default(now())
+  rotatedAt      DateTime?
+
+  console Console @relation(fields: [consoleId], references: [id], onDelete: Cascade)
+}
+
+model ConnectivityTest {
+  id        String   @id @default(cuid())
+  userId    String
+  consoleId String? // teste jogador → relay → PS5 específico
+  relayHost String?
+  rttMs     Int
+  jitterMs  Int?
+  lossPct   Float?
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id])
+  console Console? @relation(fields: [consoleId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
+// -----------------------------------------------------------------------------
+// Sessão de jogo
+// -----------------------------------------------------------------------------
+
+model GameSession {
+  id        String        @id @default(cuid())
+  playerId  String
+  hostId    String
+  consoleId String
+  regionId  String
+  packageId String
+  relayId   String?
+  status    SessionStatus @default(REQUESTED)
+
+  // Snapshot do preço no momento da compra (preços podem mudar depois)
+  currency         Currency
+  priceMinor       Int
+  hostShareBps     Int
+  purchasedSeconds Int
+
+  // Linha do tempo
+  requestedAt     DateTime  @default(now())
+  fundsHeldAt     DateTime?
+  preparingAt     DateTime?
+  readyAt         DateTime?
+  startedAt       DateTime? // 1º frame jogável — cronômetro começa aqui
+  expiresAt       DateTime? // startedAt + purchasedSeconds + pausas por culpa do anfitrião
+  endedAt         DateTime?
+  pausedSeconds   Int       @default(0) // pausas em INTERRUPTED por culpa do anfitrião
+  billableSeconds Int? // segundos efetivamente cobrados
+
+  endReason  EndReason?
+  faultParty FaultParty?
+
+  // Grant assinado (Ed25519) vigente — o relay corta no exp mesmo sem o servidor
+  grantJti       String?   @unique
+  grantExpiresAt DateTime?
+
+  // Resultado financeiro (preenchido na captura)
+  capturedMinor    Int?
+  refundedMinor    Int?
+  hostEarningMinor Int?
+  platformFeeMinor Int?
+
+  settlementStatus SettlementStatus @default(PENDING)
+  settlementDueAt  DateTime? // endedAt + settlementHoldHours
+  settledAt        DateTime?
+  payoutId         String? // repasse de sexta que pagou esta sessão
+
+  version   Int      @default(0) // lock otimista nas transições
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  player     User                @relation("PlayerSessions", fields: [playerId], references: [id])
+  host       HostProfile         @relation("HostSessions", fields: [hostId], references: [id])
+  console    Console             @relation(fields: [consoleId], references: [id])
+  region     Region              @relation(fields: [regionId], references: [id])
+  package    Package             @relation(fields: [packageId], references: [id])
+  relay      Relay?              @relation(fields: [relayId], references: [id])
+  payout     Payout?             @relation(fields: [payoutId], references: [id])
+  events     SessionEvent[]
+  telemetry  SessionTelemetry[]
+  disputes   Dispute[]
+  strikes    HostStrike[]
+  ledgerTxns LedgerTransaction[]
+
+  @@index([status])
+  @@index([consoleId, status])
+  @@index([playerId, createdAt])
+  @@index([hostId, settlementStatus])
+  @@index([settlementStatus, settlementDueAt])
+}
+
+model SessionEvent {
+  id         String         @id @default(cuid())
+  sessionId  String
+  type       String // "STATUS_CHANGED" | "GRANT_ISSUED" | "KILL_SENT" | "RECONNECTED" ...
+  fromStatus SessionStatus?
+  toStatus   SessionStatus?
+  actor      String // "system" | "relay:<id>" | "user:<id>" | "admin:<id>"
+  payload    Json?
+  createdAt  DateTime       @default(now())
+
+  session GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
+// Amostras agregadas (ex.: a cada 10 s) — evidência para reembolso automático e disputas
+model SessionTelemetry {
+  id            String   @id @default(cuid())
+  sessionId     String
+  sampledAt     DateTime
+  ps5LinkUp     Boolean // relay ↔ PS5
+  playerLinkUp  Boolean // relay ↔ jogador
+  ps5RttMs      Int?
+  playerRttMs   Int?
+  bitrateKbps   Int?
+  fps           Int?
+  packetLossPct Float?
+
+  session GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, sampledAt])
+}
+
+model Dispute {
+  id           String        @id @default(cuid())
+  sessionId    String
+  openedById   String
+  reason       String
+  status       DisputeStatus @default(OPEN)
+  refundMinor  Int?
+  resolution   String?
+  resolvedById String?
+  createdAt    DateTime      @default(now())
+  resolvedAt   DateTime?
+
+  session    GameSession @relation(fields: [sessionId], references: [id])
+  openedBy   User        @relation("DisputeOpenedBy", fields: [openedById], references: [id])
+  resolvedBy User?       @relation("DisputeResolvedBy", fields: [resolvedById], references: [id])
+
+  @@index([status])
+}
+
+// -----------------------------------------------------------------------------
+// Penalidades do anfitrião: 3 falhas em 7 dias → suspensão (7 d → 30 d → ban)
+// -----------------------------------------------------------------------------
+
+model HostStrike {
+  id        String       @id @default(cuid())
+  hostId    String
+  sessionId String?
+  reason    StrikeReason
+  createdAt DateTime     @default(now())
+
+  host    HostProfile  @relation(fields: [hostId], references: [id])
+  session GameSession? @relation(fields: [sessionId], references: [id])
+
+  @@index([hostId, createdAt])
+}
+
+model HostSuspension {
+  id          String    @id @default(cuid())
+  hostId      String
+  level       Int // 1 = 7 dias, 2 = 30 dias, 3 = banimento
+  startsAt    DateTime  @default(now())
+  endsAt      DateTime? // null = banimento definitivo
+  reason      String
+  createdById String? // null = automática
+  liftedAt    DateTime?
+
+  host      HostProfile @relation(fields: [hostId], references: [id])
+  createdBy User?       @relation(fields: [createdById], references: [id])
+
+  @@index([hostId, startsAt])
+}
+
+// -----------------------------------------------------------------------------
+// Dinheiro: recargas, ledger de partidas dobradas, repasses
+// -----------------------------------------------------------------------------
+
+model TopUp {
+  id                String          @id @default(cuid())
+  userId            String
+  amountMinor       Int
+  currency          Currency
+  method            PaymentMethod   @default(PIX)
+  provider          PaymentProvider @default(MERCADO_PAGO)
+  providerPaymentId String?         @unique
+  status            TopUpStatus     @default(PENDING)
+  pixQrCodeBase64   String?         @db.Text
+  pixCopyPaste      String?         @db.Text
+  feeMinor          Int? // taxa do Mercado Pago (0,99%)
+  expiresAt         DateTime?
+  paidAt            DateTime?
+  refundedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user       User                @relation(fields: [userId], references: [id])
+  ledgerTxns LedgerTransaction[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+// Uma conta por (tipo, usuário, moeda). Contas da plataforma/externas têm userId nulo.
+model LedgerAccount {
+  id        String            @id @default(cuid())
+  type      LedgerAccountType
+  userId    String?
+  currency  Currency
+  createdAt DateTime          @default(now())
+
+  user    User?         @relation(fields: [userId], references: [id])
+  entries LedgerEntry[]
+
+  // Postgres trata NULL como distinto em UNIQUE: as contas de sistema (userId nulo)
+  // precisam de um índice parcial na migration:
+  //   CREATE UNIQUE INDEX ledger_account_system_uq ON "LedgerAccount"(type, currency) WHERE "userId" IS NULL;
+  @@unique([type, userId, currency])
+}
+
+// Regra de ouro: a soma de amountMinor das entries de uma transação é SEMPRE zero.
+// Saldo de uma conta = soma das suas entries (contas EXTERNAL_* ficam negativas
+// por serem contrapartida do dinheiro que entrou no sistema).
+model LedgerTransaction {
+  id             String                @id @default(cuid())
+  kind           LedgerTransactionKind
+  idempotencyKey String                @unique // ex.: "topup:<id>:paid", "session:<id>:capture"
+  description    String?
+  sessionId      String?
+  topUpId        String?
+  payoutId       String?
+  createdAt      DateTime              @default(now())
+
+  session GameSession?  @relation(fields: [sessionId], references: [id])
+  topUp   TopUp?        @relation(fields: [topUpId], references: [id])
+  payout  Payout?       @relation(fields: [payoutId], references: [id])
+  entries LedgerEntry[]
+
+  @@index([sessionId])
+}
+
+model LedgerEntry {
+  id            String   @id @default(cuid())
+  transactionId String
+  accountId     String
+  amountMinor   Int // positivo aumenta o saldo da conta, negativo diminui
+  createdAt     DateTime @default(now())
+
+  transaction LedgerTransaction @relation(fields: [transactionId], references: [id])
+  account     LedgerAccount     @relation(fields: [accountId], references: [id])
+
+  @@index([accountId, createdAt])
+}
+
+// Lote semanal: gerado na sexta com sessões SETTLED até o corte de quinta 23:59,
+// aprovado manualmente pelo admin e enviado via Pix (API Mercado Pago).
+model PayoutBatch {
+  id           String            @id @default(cuid())
+  regionId     String
+  cutoffAt     DateTime // quinta 23:59:59 no fuso da região
+  status       PayoutBatchStatus @default(DRAFT)
+  totalMinor   Int               @default(0)
+  approvedById String?
+  approvedAt   DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime          @default(now())
+
+  region     Region   @relation(fields: [regionId], references: [id])
+  approvedBy User?    @relation(fields: [approvedById], references: [id])
+  payouts    Payout[]
+
+  @@unique([regionId, cutoffAt])
+}
+
+model Payout {
+  id                 String       @id @default(cuid())
+  batchId            String
+  hostId             String
+  amountMinor        Int
+  currency           Currency
+  method             PayoutMethod @default(PIX)
+  destinationMasked  String // snapshot exibível da chave Pix (ex.: "***.456.789-**")
+  status             PayoutStatus @default(PENDING)
+  providerTransferId String?      @unique
+  // Comprovante (registro de cada repasse — evidência fiscal do pass-through)
+  receipt            Json?
+  sentAt             DateTime?
+  failureReason      String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  batch      PayoutBatch         @relation(fields: [batchId], references: [id])
+  host       HostProfile         @relation(fields: [hostId], references: [id])
+  sessions   GameSession[]
+  ledgerTxns LedgerTransaction[]
+
+  @@unique([batchId, hostId])
+}
+
+// -----------------------------------------------------------------------------
+// Infra: webhooks idempotentes e auditoria de ações administrativas
+// -----------------------------------------------------------------------------
+
+model WebhookEvent {
+  id          String          @id @default(cuid())
+  provider    PaymentProvider
+  externalId  String
+  type        String
+  payload     Json
+  receivedAt  DateTime        @default(now())
+  processedAt DateTime?
+  error       String?
+
+  @@unique([provider, externalId])
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String // "PAYOUT_BATCH_APPROVED" | "SESSION_TERMINATED" | "HOST_SUSPENDED" ...
+  targetType String
+  targetId   String
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@index([targetType, targetId])
+}

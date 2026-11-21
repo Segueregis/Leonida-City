@@ -1,0 +1,26 @@
+{
+  "name": "@leonidaplay/db",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "validate": "prisma validate",
+    "format": "prisma format",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "seed": "prisma db seed"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "prisma": "7.10.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
