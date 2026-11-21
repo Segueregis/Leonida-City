@@ -144,8 +144,10 @@
   "demo": {
     "title": "Conheça o mapa de GTA 6",
     "subtitle": "Leonida inteira para explorar — e com o LeonidaPlay você joga tudo isso direto do navegador, sem ter um PS5.",
-    "play": "Assistir vídeo",
+    "play": "Ver destaques",
     "credit": "Vídeo do canal",
-    "source": "Assista no YouTube"
+    "source": "Vídeo completo no YouTube",
+    "secret": "Cidade secreta",
+    "highlights": "Melhores momentos do mapa"
   }
 }
