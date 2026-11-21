@@ -15,3 +15,5 @@ services/relay/build/
 services/relay/bin/
 services/relay/.venv-build/
 services/relay/third_party/
+.env*
+!.env.example
