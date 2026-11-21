@@ -1,10 +1,10 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useState, useSyncExternalStore, type FormEvent } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { joinWaitlist, type WaitlistState } from "../actions";
 import type { Dictionary } from "../dictionaries";
 
-const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+import { UFS } from "@/lib/ufs";
 
 type Kind = "PLAYER" | "HOST";
 
@@ -24,6 +24,33 @@ export function WaitlistForm({ t, locale }: { t: Dictionary["form"]; locale: str
     () => false,
   );
   const kind: Kind = chosen ?? (hostLink ? "HOST" : "PLAYER");
+
+  // Cidade/UF: pré-preenchidas pelo IP (se a pessoa ainda não digitou) + autocompletar com a lista do IBGE.
+  const [city, setCity] = useState("");
+  const [uf, setUf] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+  const touched = useRef(false);
+  useEffect(() => {
+    fetch("/api/geo")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((g: { city?: string; uf?: string } | null) => {
+        if (!g?.uf || touched.current) return;
+        setUf(g.uf);
+        if (g.city) setCity(g.city);
+      })
+      .catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!uf || uf === "EX") return;
+    let live = true;
+    fetch(`/api/cidades?uf=${uf}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((list: string[]) => live && setCities(list))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [uf]);
 
   // Novo clique num link do hero volta a valer sobre a escolha manual.
   useEffect(() => {
@@ -96,14 +123,37 @@ export function WaitlistForm({ t, locale }: { t: Dictionary["form"]; locale: str
           <div className="grid grid-cols-[1fr_6rem] gap-3">
             <label className="grid gap-1.5 text-sm text-muted">
               {t.city}
-              <input name="city" autoComplete="address-level2" maxLength={80} className={`${field} ${ok}`} />
+              <input
+                name="city"
+                autoComplete="address-level2"
+                maxLength={80}
+                list="lp-cidades"
+                value={city}
+                onChange={(e) => {
+                  touched.current = true;
+                  setCity(e.target.value);
+                }}
+                className={`${field} ${ok}`}
+              />
+              <datalist id="lp-cidades">
+                {(uf && uf !== "EX" ? cities : []).map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </label>
             <label className="grid gap-1.5 text-sm text-muted">
               {t.state}
-              <select name="state" defaultValue="" className={`${field} ${bad("state") ? err : ok}`}>
+              <select
+                name="state"
+                value={uf}
+                onChange={(e) => {
+                  touched.current = true;
+                  setUf(e.target.value);
+                }}
+                className={`${field} ${bad("state") ? err : ok}`}>
                 <option value="">{t.statePlaceholder}</option>
-                {UFS.map((uf) => (
-                  <option key={uf}>{uf}</option>
+                {UFS.map((u) => (
+                  <option key={u}>{u}</option>
                 ))}
                 <option value="EX">—</option>
               </select>

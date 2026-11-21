@@ -776,6 +776,8 @@ model WaitlistEntry {
   city         String?
   state        String? // UF
   countryCode  String? // detectado pelo header da Vercel
+  ipCity       String? // cidade aproximada pelo IP (header da Vercel), para conferir a declarada
+  ipRegion     String? // UF aproximada pelo IP
   locale       String
   // Jogador
   device       String? // "PC" | "NOTEBOOK" | "CELULAR" | "TV" | "TABLET"

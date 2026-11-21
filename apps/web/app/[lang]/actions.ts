@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { prisma } from "@leonidaplay/db";
 import { isLocale } from "@/lib/i18n";
+import { canonicalCity, geoFromHeaders } from "@/lib/location";
 
 export type WaitlistState =
   | { status: "idle" }
@@ -80,12 +81,15 @@ export async function joinWaitlist(_prev: WaitlistState, formData: FormData): Pr
       if (recent >= MAX_PER_IP_PER_HOUR) return { status: "error", code: "rate" };
     }
 
+    const geo = geoFromHeaders(h);
     const common = {
       name: d.name,
-      city: d.city,
+      city: await canonicalCity(d.city, d.state),
       state: d.state,
       locale: d.locale,
-      countryCode: h.get("x-vercel-ip-country") ?? undefined,
+      countryCode: geo.country,
+      ipCity: geo.city,
+      ipRegion: geo.region,
       consentAt: new Date(),
       ipHash,
       userAgent: h.get("user-agent")?.slice(0, 300),
