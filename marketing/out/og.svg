@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+  <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFB36B"/><stop offset="0.55" stop-color="#FF2A85"/><stop offset="1" stop-color="#7928CA"/>
+  </linearGradient>
+  <linearGradient id="txt" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#FFB36B"/><stop offset="0.5" stop-color="#FF2A85"/><stop offset="1" stop-color="#B14CFF"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0" r="0.9">
+    <stop offset="0" stop-color="#7928CA" stop-opacity="0.55"/><stop offset="1" stop-color="#7928CA" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0C10" stop-opacity="0"/><stop offset="1" stop-color="#0B0C10" stop-opacity="0.9"/></linearGradient>
+    <linearGradient id="cta" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FF2A85"/><stop offset="1" stop-color="#7928CA"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0B0C10"/>
+  <rect width="1200" height="441" fill="url(#glow)"/>
+  <g transform="translate(64 56) scale(1)">
+    <defs>
+  <linearGradient id="sunog" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFB36B"/><stop offset="0.55" stop-color="#FF2A85"/><stop offset="1" stop-color="#7928CA"/>
+  </linearGradient>
+  <linearGradient id="txtog" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#FFB36B"/><stop offset="0.5" stop-color="#FF2A85"/><stop offset="1" stop-color="#B14CFF"/>
+  </linearGradient>
+  <radialGradient id="glowog" cx="0.5" cy="0" r="0.9">
+    <stop offset="0" stop-color="#7928CA" stop-opacity="0.55"/><stop offset="1" stop-color="#7928CA" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="softog" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+      <mask id="mmog"><rect width="64" height="64" fill="#fff"/><rect y="37" width="64" height="2.6" fill="#000"/><rect y="43" width="64" height="3.2" fill="#000"/><rect y="49.6" width="64" height="3.8" fill="#000"/></mask>
+    </defs>
+    <rect width="64" height="64" rx="15" fill="#0B0C10"/>
+    <circle cx="32" cy="34" r="21" fill="url(#sunog)" mask="url(#mmog)"/>
+    <path d="M26.5 21.5 L43 31.5 L26.5 41.5 Z" fill="#00F0FF" stroke="#0B0C10" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+     <text x="144" y="102" font-family="Unbounded" font-weight="800" font-size="34" text-anchor="start" letter-spacing="-0.5"><tspan fill="#ECECF4">Leonida</tspan><tspan fill="url(#txt)">Play</tspan></text>
+     <text font-family="Unbounded" font-weight="800" font-size="76" letter-spacing="-1.5">
+       <tspan x="64" y="250" fill="#ECECF4">Jogue GTA 6</tspan>
+       <tspan x="64" y="340" fill="url(#txt)">sem ter um PS5.</tspan>
+     </text>
+     <text x="64" y="410" font-family="Manrope" font-weight="500" font-size="32" fill="#A6A6C2">PS5 de verdade, no navegador. Pague com Pix.</text>
+     <text x="64" y="456" font-family="Manrope" font-weight="700" font-size="30" fill="#00F0FF">Tem um PS5? Ganhe dinheiro alugando.</text>
+     
+  <mask id="sunmask"><rect x="850" y="340" width="320" height="220" fill="#fff"/><rect x="850" y="512.8" width="320" height="8" fill="#000"/><rect x="850" y="538.4" width="320" height="10.4" fill="#000"/><rect x="850" y="567.2" width="320" height="12.8" fill="#000"/><rect x="850" y="599.2" width="320" height="15.2" fill="#000"/><rect x="850" y="634.4" width="320" height="17.6" fill="#000"/></mask>
+  <circle cx="1010" cy="500" r="168" fill="#FF2A85" opacity="0.35" filter="url(#soft)"/>
+  <circle cx="1010" cy="500" r="160" fill="url(#sun)" mask="url(#sunmask)"/>
+     <rect x="0" y="560" width="1200" height="3" fill="#FF2A85"/>
+     <g stroke="#00F0FF" stroke-opacity="0.45" stroke-width="2"><line x1="348" y1="562" x2="-1800" y2="630"/><line x1="366" y1="562" x2="-1628.5714285714284" y2="630"/><line x1="384" y1="562" x2="-1457.1428571428569" y2="630"/><line x1="402" y1="562" x2="-1285.7142857142856" y2="630"/><line x1="420" y1="562" x2="-1114.2857142857142" y2="630"/><line x1="438" y1="562" x2="-942.8571428571427" y2="630"/><line x1="456" y1="562" x2="-771.4285714285713" y2="630"/><line x1="474" y1="562" x2="-600" y2="630"/><line x1="492" y1="562" x2="-428.57142857142844" y2="630"/><line x1="510" y1="562" x2="-257.1428571428571" y2="630"/><line x1="528" y1="562" x2="-85.71428571428567" y2="630"/><line x1="546" y1="562" x2="85.71428571428578" y2="630"/><line x1="564" y1="562" x2="257.14285714285717" y2="630"/><line x1="582" y1="562" x2="428.57142857142856" y2="630"/><line x1="600" y1="562" x2="600" y2="630"/><line x1="618" y1="562" x2="771.4285714285714" y2="630"/><line x1="636" y1="562" x2="942.8571428571429" y2="630"/><line x1="654" y1="562" x2="1114.2857142857142" y2="630"/><line x1="672" y1="562" x2="1285.7142857142858" y2="630"/><line x1="690" y1="562" x2="1457.142857142857" y2="630"/><line x1="708" y1="562" x2="1628.5714285714284" y2="630"/><line x1="726" y1="562" x2="1800" y2="630"/><line x1="744" y1="562" x2="1971.4285714285713" y2="630"/><line x1="762" y1="562" x2="2142.8571428571427" y2="630"/><line x1="780" y1="562" x2="2314.285714285714" y2="630"/><line x1="798" y1="562" x2="2485.7142857142853" y2="630"/><line x1="816" y1="562" x2="2657.142857142857" y2="630"/><line x1="834" y1="562" x2="2828.5714285714284" y2="630"/><line x1="852" y1="562" x2="3000" y2="630"/><line x1="0" y1="562.6739064962925" x2="1200" y2="562.6739064962925"/><line x1="0" y1="564.8891003958287" x2="1200" y2="564.8891003958287"/><line x1="0" y1="568.7694639187969" x2="1200" y2="568.7694639187969"/><line x1="0" y1="574.3858445394089" x2="1200" y2="574.3858445394089"/><line x1="0" y1="581.7895834103823" x2="1200" y2="581.7895834103823"/><line x1="0" y1="591.0213271350538" x2="1200" y2="591.0213271350538"/><line x1="0" y1="602.1148827272016" x2="1200" y2="602.1148827272016"/><line x1="0" y1="615.099277953754" x2="1200" y2="615.099277953754"/><line x1="0" y1="630" x2="1200" y2="630"/></g>
+  <rect x="0" y="562" width="1200" height="68" fill="url(#fade)"/>
+</svg>

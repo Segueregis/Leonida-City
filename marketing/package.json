@@ -1,0 +1,12 @@
+{
+  "name": "leonidaplay-marketing",
+  "private": true,
+  "type": "module",
+  "description": "Gera as imagens de marca (logo, Instagram, Open Graph) a partir de SVG.",
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}

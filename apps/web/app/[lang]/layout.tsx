@@ -19,7 +19,15 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t.meta.title,
     description: t.meta.description,
     alternates: { canonical: `/${locale}`, languages: { "pt-BR": "/pt", en: "/en" } },
-    openGraph: { title: t.meta.title, description: t.meta.description, type: "website", locale: htmlLang[locale] },
+    openGraph: {
+      title: t.meta.title,
+      description: t.meta.description,
+      type: "website",
+      siteName: "LeonidaPlay",
+      locale: htmlLang[locale],
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: t.meta.title }],
+    },
+    twitter: { card: "summary_large_image", title: t.meta.title, description: t.meta.description, images: ["/og.png"] },
   };
 }
 

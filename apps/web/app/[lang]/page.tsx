@@ -29,9 +29,11 @@ export default async function Home() {
       {/* Navegação */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-ink/70 backdrop-blur-md">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href={`/${locale}`} className="font-display text-lg font-bold tracking-tight">
-            <span className="text-fg">Leonida</span>
-            <span className="bg-gradient-to-r from-pink to-cyan bg-clip-text text-transparent">Play</span>
+          <Link href={`/${locale}`} className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight">
+            {/* eslint-disable-next-line @next/next/no-img-element -- SVG estático pequeno */}
+            <img src="/logo.svg" alt="" width={32} height={32} className="size-8 rounded-lg" />
+            <span><span className="text-fg">Leonida</span>
+            <span className="bg-gradient-to-r from-pink to-cyan bg-clip-text text-transparent">Play</span></span>
           </Link>
           <div className="hidden items-center gap-7 text-sm text-muted md:flex">
             <a href="#como-funciona" className="hover:text-fg">{t.nav.how}</a>
