@@ -2,6 +2,7 @@ import Link from "next/link";
 import { brl, packages } from "@/lib/pricing";
 import { getDictionary, getLocale } from "./dictionaries";
 import { EarningsCalculator } from "./_components/EarningsCalculator";
+import { PlayDemo } from "./_components/PlayDemo";
 import { WaitlistForm } from "./_components/WaitlistForm";
 
 function Palm({ className }: { className?: string }) {
@@ -94,6 +95,18 @@ export default async function Home() {
           </div>
           <div className="relative -mt-12 h-40 overflow-hidden sm:-mt-16" aria-hidden>
             <div className="grid-floor absolute -inset-x-1/2 top-0 h-[200%]" />
+          </div>
+        </section>
+
+        {/* Demo interativa */}
+        <section id="demo" className="relative scroll-mt-20 px-4 pb-8 pt-16 sm:px-6">
+          <div className="absolute inset-x-0 top-0 -z-10 h-full bg-[radial-gradient(ellipse_at_center,rgb(255_42_133/0.12),transparent_65%)]" />
+          <div className="mx-auto max-w-6xl text-center">
+            <h2 className="font-display text-3xl font-bold sm:text-4xl">{t.demo.title}</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-muted">{t.demo.subtitle}</p>
+          </div>
+          <div className="mt-10">
+            <PlayDemo t={t.demo} />
           </div>
         </section>
 
@@ -203,6 +216,19 @@ export default async function Home() {
             Leonida<span className="text-pink">Play</span>
           </p>
           <p className="mt-2">{t.footer.tagline}</p>
+          <a
+            href="https://www.instagram.com/leonidaplay_ps5/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-fg hover:border-pink hover:text-pink"
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
+            </svg>
+            {t.footer.instagram} · @leonidaplay_ps5
+          </a>
           <p className="mt-6 max-w-3xl text-xs text-muted/70">{t.footer.disclaimer}</p>
           <p className="mt-4 text-xs text-muted/50">
             © {year} LeonidaPlay. {t.footer.rights}

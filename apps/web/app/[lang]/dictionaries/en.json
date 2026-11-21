@@ -11,20 +11,29 @@
     "cta": "Join the waitlist"
   },
   "hero": {
-    "badge": "Closed beta · Brazil",
+    "badge": "Coming soon to Brazil · Pay with Pix",
     "title1": "Play GTA 6",
     "title2": "without owning a PS5.",
     "subtitle": "Rent time on a real PS5 and play in your browser — on a basic PC, laptop or phone. Nothing to install. Pay with Pix.",
     "ctaPlayer": "I want to play",
     "ctaHost": "I own a PS5",
-    "note": "Beta spots are limited. Join the list and we'll let you know first."
+    "note": "Limited spots at launch. Join the list and we'll let you know first."
   },
   "how": {
     "title": "How it works",
     "steps": [
-      { "title": "Pick a console", "text": "See the PS5s available near you. We test your connection before you pay." },
-      { "title": "Top up with Pix", "text": "Add credits to your wallet in seconds. From R$ 7.50." },
-      { "title": "Play in your browser", "text": "Use a controller on PC or on-screen buttons on your phone. Your time only starts when the game is on screen." }
+      {
+        "title": "Pick a console",
+        "text": "See the PS5s available near you. We test your connection before you pay."
+      },
+      {
+        "title": "Top up with Pix",
+        "text": "Add credits to your wallet in seconds. From R$ 7.50."
+      },
+      {
+        "title": "Play in your browser",
+        "text": "Use a controller on PC or on-screen buttons on your phone. Your time only starts when the game is on screen."
+      }
     ]
   },
   "prices": {
@@ -53,7 +62,7 @@
   },
   "form": {
     "title": "Join the waitlist",
-    "subtitle": "The first on the list get into the beta.",
+    "subtitle": "First on the list, first to play.",
     "tabPlayer": "I want to play",
     "tabHost": "I want to host",
     "email": "Email",
@@ -62,9 +71,19 @@
     "state": "State",
     "statePlaceholder": "State",
     "device": "Where will you play?",
-    "devices": { "PC": "PC", "NOTEBOOK": "Laptop", "CELULAR": "Phone", "TABLET": "Tablet", "TV": "Smart TV" },
+    "devices": {
+      "PC": "PC",
+      "NOTEBOOK": "Laptop",
+      "CELULAR": "Phone",
+      "TABLET": "Tablet",
+      "TV": "Smart TV"
+    },
     "consoleModel": "PS5 model",
-    "consoleModels": { "PS5": "PS5 (disc)", "PS5_DIGITAL": "PS5 Digital", "PS5_PRO": "PS5 Pro" },
+    "consoleModels": {
+      "PS5": "PS5 (disc)",
+      "PS5_DIGITAL": "PS5 Digital",
+      "PS5_PRO": "PS5 Pro"
+    },
     "hasGame": "Do you own GTA 6?",
     "yes": "Yes",
     "no": "Not yet",
@@ -73,12 +92,12 @@
     "uploadDontKnow": "Don't know",
     "hours": "How many hours a day is your PS5 free?",
     "whatsapp": "WhatsApp (optional)",
-    "beta": "I want to test the beta before everyone else",
+    "beta": "I want to try it before everyone else",
     "consent": "I agree to be contacted by LeonidaPlay about the launch and to the processing of my data for that purpose (LGPD). I can opt out anytime.",
     "submit": "Join the waitlist",
     "submitting": "Sending…",
     "successPlayer": "Done! You're on the list. We'll email you when a spot opens.",
-    "successHost": "Done! We got your host sign-up. We'll reach out about the beta.",
+    "successHost": "Done! We got your host sign-up. We'll reach out before launch.",
     "errors": {
       "email": "Enter a valid email.",
       "consent": "You need to agree to join the list.",
@@ -90,17 +109,51 @@
   "faq": {
     "title": "FAQ",
     "items": [
-      { "q": "Do I need to install anything?", "a": "No. You play right in your browser (recent Chrome, Edge or Safari). Works with PlayStation, Xbox or generic controllers on PC, and on-screen buttons on mobile." },
-      { "q": "What internet do I need to play?", "a": "We recommend a stable 15 Mbps, ideally wired or 5 GHz Wi‑Fi. Before you pay, we measure latency to the console and show whether your connection is good." },
-      { "q": "Does the player get access to my PSN account?", "a": "No. Players use a secondary account on your PS5 with a zero spending limit. They never see your email, password or card, and the buttons that open the system menu are blocked." },
-      { "q": "How do I get paid as a host?", "a": "You keep 80% of every session. Sessions are held for 24 h (in case of drops) and paid via Pix every Friday." },
-      { "q": "What if the connection drops mid-game?", "a": "If the drop is on the host's side, we automatically refund the missing minutes as wallet credit." },
-      { "q": "When does it launch?", "a": "We're in a closed beta in Brazil. People on the waitlist get invited first." }
+      {
+        "q": "Do I need to install anything?",
+        "a": "No. You play right in your browser (recent Chrome, Edge or Safari). Works with PlayStation, Xbox or generic controllers on PC, and on-screen buttons on mobile."
+      },
+      {
+        "q": "What internet do I need to play?",
+        "a": "We recommend a stable 15 Mbps, ideally wired or 5 GHz Wi‑Fi. Before you pay, we measure latency to the console and show whether your connection is good."
+      },
+      {
+        "q": "Does the player get access to my PSN account?",
+        "a": "No. Players use a secondary account on your PS5 with a zero spending limit. They never see your email, password or card, and the buttons that open the system menu are blocked."
+      },
+      {
+        "q": "How do I get paid as a host?",
+        "a": "You keep 80% of every session. Sessions are held for 24 h (in case of drops) and paid via Pix every Friday."
+      },
+      {
+        "q": "What if the connection drops mid-game?",
+        "a": "If the drop is on the host's side, we automatically refund the missing minutes as wallet credit."
+      },
+      {
+        "q": "When does it launch?",
+        "a": "We're getting ready to open in Brazil. People on the waitlist hear first and can try it before everyone else."
+      }
     ]
   },
   "footer": {
     "tagline": "Play next-gen without owning a console — or earn money hosting yours.",
     "disclaimer": "LeonidaPlay is an independent service and is not affiliated with, sponsored or endorsed by Sony Interactive Entertainment, PlayStation or Rockstar Games. All trademarks belong to their respective owners.",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "instagram": "Follow on Instagram"
+  },
+  "demo": {
+    "title": "See what playing looks like",
+    "subtitle": "The game runs on the host's PS5 and streams to your browser. Try it: drive with your arrow keys or by tapping the buttons.",
+    "illustrative": "Illustrative animation — not real game footage.",
+    "live": "LIVE",
+    "console": "PS5 in Campinas, SP",
+    "time": "Time",
+    "ping": "Ping",
+    "pc": "On PC",
+    "phone": "On phone",
+    "hintPc": "Use ← → or A/D to drive",
+    "hintPhone": "Tap the buttons to drive",
+    "warning": "Your time ends in 60 s",
+    "start": "Tap to drive"
   }
 }
