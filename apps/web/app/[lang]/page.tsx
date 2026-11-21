@@ -2,7 +2,7 @@ import Link from "next/link";
 import { brl, packages } from "@/lib/pricing";
 import { getDictionary, getLocale } from "./dictionaries";
 import { EarningsCalculator } from "./_components/EarningsCalculator";
-import { PlayDemo } from "./_components/PlayDemo";
+import { MapVideo } from "./_components/MapVideo";
 import { WaitlistForm } from "./_components/WaitlistForm";
 
 function Palm({ className }: { className?: string }) {
@@ -98,7 +98,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Demo interativa */}
+        {/* Vídeo do mapa */}
         <section id="demo" className="relative scroll-mt-20 px-4 pb-8 pt-16 sm:px-6">
           <div className="absolute inset-x-0 top-0 -z-10 h-full bg-[radial-gradient(ellipse_at_center,rgb(255_42_133/0.12),transparent_65%)]" />
           <div className="mx-auto max-w-6xl text-center">
@@ -106,7 +106,7 @@ export default async function Home() {
             <p className="mx-auto mt-3 max-w-2xl text-muted">{t.demo.subtitle}</p>
           </div>
           <div className="mt-10">
-            <PlayDemo t={t.demo} />
+            <MapVideo t={t.demo} />
           </div>
         </section>
 

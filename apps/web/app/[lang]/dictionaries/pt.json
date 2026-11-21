@@ -11,7 +11,7 @@
     "cta": "Entrar na lista"
   },
   "hero": {
-    "badge": "Em breve no Brasil · Pague com Pix",
+    "badge": "Online no Brasil",
     "title1": "Jogue GTA 6",
     "title2": "sem ter um PS5.",
     "subtitle": "Alugue tempo em um PS5 de verdade e jogue pelo navegador — no PC simples, notebook ou celular. Sem instalar nada. Pague com Pix.",
@@ -142,18 +142,10 @@
     "instagram": "Siga no Instagram"
   },
   "demo": {
-    "title": "Veja como é jogar",
-    "subtitle": "O jogo roda no PS5 do anfitrião e chega até você pelo navegador. Experimente: dirija com as setas do teclado ou tocando nos botões.",
-    "illustrative": "Animação ilustrativa — não é imagem real do jogo.",
-    "live": "AO VIVO",
-    "console": "PS5 em Campinas, SP",
-    "time": "Tempo",
-    "ping": "Ping",
-    "pc": "No PC",
-    "phone": "No celular",
-    "hintPc": "Use ← → ou A/D para dirigir",
-    "hintPhone": "Toque nos botões para dirigir",
-    "warning": "Seu tempo acaba em 60 s",
-    "start": "Toque para dirigir"
+    "title": "Conheça o mapa de GTA 6",
+    "subtitle": "Leonida inteira para explorar — e com o LeonidaPlay você joga tudo isso direto do navegador, sem ter um PS5.",
+    "play": "Assistir vídeo",
+    "credit": "Vídeo do canal",
+    "source": "Assista no YouTube"
   }
 }
