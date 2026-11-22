@@ -78,6 +78,12 @@ export function WaitlistForm({ t, locale }: { t: Dictionary["form"]; locale: str
       <div role="status" className="rounded-2xl border border-cyan/40 bg-cyan/5 p-8 text-center">
         <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-cyan/15 text-2xl text-cyan">✓</div>
         <p className="text-lg text-fg">{state.kind === "HOST" ? t.successHost : t.successPlayer}</p>
+        <a
+          href={`/${locale}/${state.kind === "HOST" ? "anfitriao" : "consoles"}`}
+          className="mt-6 inline-block rounded-xl border border-cyan/50 px-6 py-3 font-semibold text-cyan transition hover:bg-cyan/10"
+        >
+          {state.kind === "HOST" ? t.ctaHostAfter : t.ctaPlayerAfter} →
+        </a>
       </div>
     );
   }

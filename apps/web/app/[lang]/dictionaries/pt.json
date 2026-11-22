@@ -98,6 +98,8 @@
     "submitting": "Enviando…",
     "successPlayer": "Pronto! Você está na lista. Avisamos por e-mail quando abrir uma vaga.",
     "successHost": "Pronto! Recebemos seu cadastro de anfitrião. Vamos falar com você antes do lançamento.",
+    "ctaPlayerAfter": "Ver consoles e testar sua conexão",
+    "ctaHostAfter": "Adiantar meu cadastro de anfitrião",
     "errors": {
       "email": "Informe um e-mail válido.",
       "consent": "É preciso aceitar para entrar na lista.",

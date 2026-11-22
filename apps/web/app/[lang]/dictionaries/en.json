@@ -98,6 +98,8 @@
     "submitting": "Sending…",
     "successPlayer": "Done! You're on the list. We'll email you when a spot opens.",
     "successHost": "Done! We got your host sign-up. We'll reach out before launch.",
+    "ctaPlayerAfter": "See consoles and test your connection",
+    "ctaHostAfter": "Get a head start on host sign-up",
     "errors": {
       "email": "Enter a valid email.",
       "consent": "You need to agree to join the list.",
