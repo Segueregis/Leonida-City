@@ -46,6 +46,9 @@ async function Wallet({ locale }: { locale: string }) {
         <p className="text-sm text-muted">Seu saldo</p>
         <p className="mt-1 font-display text-4xl font-bold tabular-nums text-fg sm:text-5xl">{formatBRL(balance)}</p>
         <p className="mt-2 text-sm text-muted">Use os créditos para alugar tempo de jogo. Eles não expiram.</p>
+        <Link href={`/${locale}/consoles`} className="mt-5 inline-block rounded-xl border border-cyan/50 px-5 py-2.5 text-sm font-semibold text-cyan hover:bg-cyan/10">
+          Ver consoles disponíveis →
+        </Link>
       </section>
 
       <section className="mt-6 rounded-3xl border border-line bg-panel p-6 sm:p-8">
