@@ -50,7 +50,10 @@ export default async function Home() {
             >
               {other === "pt" ? "PT" : "EN"}
             </Link>
-            <a href="#lista" className="whitespace-nowrap rounded-full bg-pink px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-pink/30 hover:bg-pink/90 sm:px-4 sm:text-sm">
+            <Link href={`/${locale}/entrar`} className="whitespace-nowrap rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-fg hover:border-cyan hover:text-cyan sm:px-4 sm:py-2 sm:text-sm">
+              {t.nav.login}
+            </Link>
+            <a href="#lista" className="hidden whitespace-nowrap rounded-full bg-pink px-3 py-2 text-xs font-semibold sm:inline-block text-white shadow-lg shadow-pink/30 hover:bg-pink/90 sm:px-4 sm:text-sm">
               {t.nav.cta}
             </a>
           </div>
@@ -77,7 +80,7 @@ export default async function Home() {
               <a href="#lista-jogador" className="w-full rounded-2xl bg-gradient-to-r from-pink to-purple px-7 py-4 font-semibold text-white shadow-xl shadow-pink/25 transition hover:scale-[1.02] sm:w-auto">
                 {t.hero.ctaPlayer}
               </a>
-              <a href="#lista-anfitriao" className="w-full rounded-2xl border border-cyan/50 px-7 py-4 font-semibold text-cyan transition hover:bg-cyan/10 sm:w-auto">
+              <a href={`/${locale}/anfitriao`} className="w-full rounded-2xl border border-cyan/50 px-7 py-4 font-semibold text-cyan transition hover:bg-cyan/10 sm:w-auto">
                 {t.hero.ctaHost}
               </a>
             </div>
@@ -172,8 +175,8 @@ export default async function Home() {
                 </li>
               ))}
             </ul>
-            <a href="#lista-anfitriao" className="mt-8 inline-block rounded-2xl border border-cyan/50 px-6 py-3 font-semibold text-cyan hover:bg-cyan/10">
-              {t.hero.ctaHost}
+            <a href={`/${locale}/anfitriao`} className="mt-8 inline-block rounded-2xl bg-gradient-to-r from-pink to-purple px-6 py-3 font-semibold text-white shadow-lg shadow-pink/25 hover:brightness-110">
+              {t.host.ctaSignup} →
             </a>
           </div>
           <EarningsCalculator locale={locale} t={t.host} />

@@ -8,7 +8,8 @@
     "prices": "Preços",
     "host": "Seja anfitrião",
     "faq": "Dúvidas",
-    "cta": "Entrar na lista"
+    "cta": "Entrar na lista",
+    "login": "Entrar"
   },
   "hero": {
     "badge": "Online no Brasil",
@@ -55,6 +56,7 @@
       "Precisa só do PS5 e de internet boa — nada para instalar",
       "Você escolhe quando o console fica disponível"
     ],
+    "ctaSignup": "Cadastrar meu PS5",
     "calcTitle": "Quanto você pode ganhar",
     "calcHours": "Horas alugadas por dia",
     "calcPerMonth": "por mês (estimativa)",

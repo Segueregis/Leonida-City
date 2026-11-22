@@ -8,7 +8,8 @@
     "prices": "Pricing",
     "host": "Become a host",
     "faq": "FAQ",
-    "cta": "Join the waitlist"
+    "cta": "Join the waitlist",
+    "login": "Sign in"
   },
   "hero": {
     "badge": "Online in Brazil",
@@ -55,6 +56,7 @@
       "All you need is the PS5 and good internet — nothing to install",
       "You choose when your console is available"
     ],
+    "ctaSignup": "Register my PS5",
     "calcTitle": "How much you could earn",
     "calcHours": "Hours rented per day",
     "calcPerMonth": "per month (estimate)",
