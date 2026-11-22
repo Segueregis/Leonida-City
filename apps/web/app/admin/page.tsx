@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { isAdminAuthorized } from "@/lib/admin-auth";
 import { analyze, cityOf, getWaitlist, TZ, ufOf, whatsappLink, type Entry } from "@/lib/admin-data";
+import { AdminNav, Card, Kpi, td, th } from "./_ui";
 
 // Cores das séries (validadas para daltonismo no fundo escuro): jogador = rosa, anfitrião = turquesa.
 const C_PLAYER = "#FF2A85";
@@ -52,6 +53,7 @@ async function Dashboard() {
 
   return (
     <div className="grid gap-6">
+      <AdminNav active="/admin" />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-cyan">LeonidaPlay</p>
@@ -132,29 +134,6 @@ async function Dashboard() {
 }
 
 /* ---------- peças ---------- */
-
-function Kpi({ label, value, hint, dot }: { label: string; value: number | string; hint?: string; dot?: string }) {
-  return (
-    <div className="rounded-2xl border border-line bg-panel p-4">
-      <p className="flex items-center gap-2 text-xs text-muted">
-        {dot && <span className="size-2.5 rounded-full" style={{ background: dot }} aria-hidden />}
-        {label}
-      </p>
-      <p className="mt-2 font-display text-3xl font-bold tabular-nums text-fg">{value}</p>
-      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
-    </div>
-  );
-}
-
-function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
-  return (
-    <section className="min-w-0 rounded-2xl border border-line bg-panel p-5">
-      <h2 className="font-display text-base font-semibold text-fg">{title}</h2>
-      {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
 
 function Legend() {
   return (
@@ -303,9 +282,6 @@ function Place({ e }: { e: Entry }) {
     </span>
   );
 }
-
-const th = "whitespace-nowrap pb-2 pr-4 text-left text-xs font-medium text-muted";
-const td = "whitespace-nowrap py-2.5 pr-4 align-top";
 
 function HostsTable({ rows }: { rows: Entry[] }) {
   if (!rows.length) return <Empty />;
