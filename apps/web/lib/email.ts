@@ -1,11 +1,13 @@
 import "server-only";
 
 // Envio do código de login. Provedor: Resend (API HTTP simples, sem SDK).
-// Sem RESEND_API_KEY fora de produção → modo de teste: o código aparece na tela e no terminal.
+// Fora de produção → modo de teste: o código aparece na tela e no terminal.
 
 export async function sendLoginCode(email: string, code: string): Promise<"sent" | "dev" | "failed"> {
   const key = process.env.RESEND_API_KEY;
-  if (!key) {
+  // Em desenvolvimento não enviamos e-mail de verdade (endereços de teste geram devolução e prejudicam o domínio).
+  // Para testar o envio real localmente: EMAIL_SEND_IN_DEV=1.
+  if (!key || (process.env.NODE_ENV !== "production" && process.env.EMAIL_SEND_IN_DEV !== "1")) {
     if (process.env.NODE_ENV === "production") {
       console.error("email: RESEND_API_KEY ausente em produção");
       return "failed";

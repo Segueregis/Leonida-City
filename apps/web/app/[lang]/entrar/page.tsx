@@ -18,7 +18,9 @@ export default async function LoginPage() {
         <Suspense>
           <AlreadyIn locale={locale} />
         </Suspense>
-        <LoginForm locale={locale} />
+        <Suspense>
+          <LoginForm locale={locale} />
+        </Suspense>
       </div>
     </AppShell>
   );

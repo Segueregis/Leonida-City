@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import { loginAction, type LoginState } from "../_app/actions";
 
 const ERRORS: Record<string, string> = {
@@ -20,12 +21,14 @@ const primary =
 
 export function LoginForm({ locale }: { locale: string }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(loginAction, { step: "email" });
+  const next = useSearchParams().get("next") ?? "";
   const error = state.error ? ERRORS[state.error] : null;
 
   if (state.step === "email") {
     return (
       <form action={action} className="mt-6 grid gap-4">
         <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="next" value={next} />
         <label className="grid gap-1.5 text-sm font-medium text-fg">
           E-mail
           <input name="email" type="email" required autoComplete="email" inputMode="email" placeholder="voce@email.com" className={input} />
@@ -49,6 +52,7 @@ export function LoginForm({ locale }: { locale: string }) {
   return (
     <form action={action} className="mt-6 grid gap-4">
       <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="next" value={next} />
       <p className="text-sm text-muted">
         Enviamos o código para <b className="text-fg">{state.email}</b>. Vale por 10 minutos.
       </p>

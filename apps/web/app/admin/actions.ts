@@ -36,3 +36,17 @@ export async function adminToggleBlock(form: FormData) {
   ]);
   revalidatePath("/admin/usuarios");
 }
+
+/** Aprovar / suspender / reativar anfitrião. Suspender também tira o console da vitrine. */
+export async function adminSetHostStatus(form: FormData) {
+  const adminId = await requireAdmin();
+  const id = String(form.get("id"));
+  const status = String(form.get("status"));
+  if (status !== "ACTIVE" && status !== "SUSPENDED") throw new Error("status inválido");
+  await prisma.$transaction([
+    prisma.hostProfile.update({ where: { id }, data: { status, ...(status === "ACTIVE" ? { suspendedUntil: null } : {}) } }),
+    ...(status === "SUSPENDED" ? [prisma.console.updateMany({ where: { hostId: id }, data: { listed: false } })] : []),
+    prisma.adminAuditLog.create({ data: { adminId, action: status === "ACTIVE" ? "HOST_APPROVED" : "HOST_SUSPENDED", targetType: "HostProfile", targetId: id } }),
+  ]);
+  revalidatePath("/admin/anfitrioes");
+}

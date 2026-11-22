@@ -11,6 +11,11 @@ import { canSimulatePayments } from "@/lib/mercadopago";
 import { createTopUp, markTopUpPaid, MAX_TOPUP_MINOR, refreshTopUp } from "@/lib/wallet";
 
 const loc = (v: FormDataEntryValue | null) => (typeof v === "string" && isLocale(v) ? v : "pt");
+/** Só aceita voltar para páginas internas do próprio site (evita redirecionamento para sites externos). */
+function safeNext(v: FormDataEntryValue | null, locale: string) {
+  return typeof v === "string" && /^\/(pt|en)\/[a-z0-9-]+(\/[a-z0-9-]+)*$/.test(v) && v.startsWith(`/${locale}/`) ? v : null;
+}
+
 const emailSchema = z.string().trim().toLowerCase().pipe(z.email().max(200));
 
 // ---------------- Login ----------------
@@ -44,7 +49,7 @@ export async function loginAction(prev: LoginState, form: FormData): Promise<Log
     userAgent: h.get("user-agent") ?? undefined,
   });
   if (!r.ok) return { ...prev, error: r.code };
-  redirect(`/${locale}/carteira`);
+  redirect(safeNext(form.get("next"), locale) ?? `/${locale}/carteira`);
 }
 
 export async function logoutAction(form: FormData) {
