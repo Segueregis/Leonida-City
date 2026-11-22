@@ -4,6 +4,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getHostState } from "@/lib/host";
+import { getHostEarnings } from "@/lib/host-earnings";
+import { EarningsPanel } from "./EarningsPanel";
 import { getLocale } from "../dictionaries";
 import { AppShell } from "../_app/AppShell";
 import { ChecklistForm, ConsoleForm, ListedToggle, PayoutForm } from "./HostForms";
@@ -32,9 +34,11 @@ async function Host({ locale }: { locale: string }) {
   const s = await getHostState(user.id);
   const done = [s.steps.payout, s.steps.console, s.steps.checklist].filter(Boolean).length;
   const status = s.host ? HOST_STATUS[s.host.status] : null;
+  // Painel de ganhos a partir da aprovação (antes disso não há o que mostrar).
+  const earnings = s.host && s.host.status !== "PENDING_ONBOARDING" ? await getHostEarnings(user.id, s.host.id) : null;
 
   return (
-    <AppShell locale={locale} email={user.email}>
+    <AppShell locale={locale} email={user.email} active="anfitriao">
       <section className="mt-6">
         <h1 className="font-display text-3xl font-bold text-fg">Ganhe com seu PS5</h1>
         <p className="mt-2 text-muted">
@@ -55,6 +59,10 @@ async function Host({ locale }: { locale: string }) {
           <p className="mt-1 text-sm text-fg/80">{status.text}</p>
         </div>
       )}
+
+      {earnings && <EarningsPanel e={earnings} />}
+
+      {done === 3 && <h2 className="mt-10 font-display text-xl font-semibold text-fg">Seu cadastro</h2>}
 
       <Step n={1} title="Dados para receber" done={s.steps.payout}>
         <PayoutForm

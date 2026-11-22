@@ -2,8 +2,15 @@ import Link from "next/link";
 import { paymentMode } from "@/lib/mercadopago";
 import { logoutAction } from "./actions";
 
-/** Moldura das telas logadas/login: logo, aviso de modo de teste e (opcional) botão Sair. */
-export function AppShell({ locale, email, children }: { locale: string; email?: string; children: React.ReactNode }) {
+const NAV = [
+  { key: "carteira", label: "Carteira" },
+  { key: "consoles", label: "Consoles" },
+  { key: "anfitriao", label: "Anfitrião" },
+] as const;
+export type AppSection = (typeof NAV)[number]["key"];
+
+/** Moldura das telas logadas/login: logo, aviso de modo de teste, navegação da conta e botão Sair. */
+export function AppShell({ locale, email, active, children }: { locale: string; email?: string; active?: AppSection; children: React.ReactNode }) {
   const mode = paymentMode();
   return (
     <div className="min-h-dvh bg-[radial-gradient(ellipse_at_top,rgb(121_40_202/0.25),transparent_55%)]">
@@ -31,7 +38,30 @@ export function AppShell({ locale, email, children }: { locale: string; email?: 
           </form>
         )}
       </header>
+      {email && <AccountNav locale={locale} active={active} />}
       <main className="mx-auto max-w-3xl px-4 pb-16 sm:px-6">{children}</main>
     </div>
+  );
+}
+
+/** Abas da conta (jogador e anfitrião na mesma conta). */
+export function AccountNav({ locale, active, wide }: { locale: string; active?: AppSection; wide?: boolean }) {
+  return (
+    <nav aria-label="Minha conta" className={`mx-auto px-4 sm:px-6 ${wide ? "max-w-5xl" : "max-w-3xl"}`}>
+      <div className="grid grid-cols-3 gap-1 rounded-2xl border border-line bg-panel/80 p-1 text-sm">
+        {NAV.map((n) => (
+          <Link
+            key={n.key}
+            href={`/${locale}/${n.key}`}
+            aria-current={n.key === active ? "page" : undefined}
+            className={`rounded-xl px-3 py-2 text-center font-semibold transition ${
+              n.key === active ? "bg-gradient-to-r from-pink/25 to-purple/25 text-fg" : "text-muted hover:text-fg"
+            }`}
+          >
+            {n.label}
+          </Link>
+        ))}
+      </div>
+    </nav>
   );
 }

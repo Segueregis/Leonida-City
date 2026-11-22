@@ -29,7 +29,7 @@ async function Pix({ locale, params }: { locale: string; params: Promise<{ id: s
   if (!t) notFound();
 
   return (
-    <AppShell locale={locale} email={user.email}>
+    <AppShell locale={locale} email={user.email} active="carteira">
       <Link href={`/${locale}/carteira`} className="mt-4 inline-block text-sm text-muted hover:text-fg">
         ← Voltar para a carteira
       </Link>

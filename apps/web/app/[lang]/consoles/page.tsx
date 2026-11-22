@@ -8,6 +8,7 @@ import { getShowcase, uploadQuality, type ShowcaseStatus } from "@/lib/consoles"
 import { walletBalance } from "@/lib/wallet";
 import { getLocale } from "../dictionaries";
 import { PingTest } from "./PingTest";
+import { AccountNav } from "../_app/AppShell";
 
 // Fora do menu e do Google até o lançamento.
 export const metadata: Metadata = { title: "Consoles disponíveis · LeonidaPlay", robots: { index: false } };
@@ -38,6 +39,9 @@ export default async function ConsolesPage() {
           <AccountLink locale={locale} />
         </Suspense>
       </header>
+      <Suspense fallback={null}>
+        <LoggedNav locale={locale} />
+      </Suspense>
 
       <main className="mx-auto grid max-w-5xl gap-6 px-4 pb-16 sm:px-6">
         <section className="pt-4">
@@ -56,6 +60,10 @@ export default async function ConsolesPage() {
       </main>
     </div>
   );
+}
+
+async function LoggedNav({ locale }: { locale: string }) {
+  return (await getCurrentUser()) ? <AccountNav locale={locale} active="consoles" wide /> : null;
 }
 
 async function AccountLink({ locale }: { locale: string }) {

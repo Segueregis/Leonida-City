@@ -41,7 +41,7 @@ async function Wallet({ locale }: { locale: string }) {
   ]);
 
   return (
-    <AppShell locale={locale} email={user.email}>
+    <AppShell locale={locale} email={user.email} active="carteira">
       <section className="mt-6 overflow-hidden rounded-3xl border border-line bg-panel p-6 sm:p-8">
         <p className="text-sm text-muted">Seu saldo</p>
         <p className="mt-1 font-display text-4xl font-bold tabular-nums text-fg sm:text-5xl">{formatBRL(balance)}</p>
