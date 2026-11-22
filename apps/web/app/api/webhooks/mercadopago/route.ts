@@ -1,5 +1,5 @@
 import { prisma, Prisma } from "@leonidaplay/db";
-import { getOrder, paymentMode, verifyWebhookSignature } from "@/lib/mercadopago";
+import { getOrder, MpError, paymentMode, verifyWebhookSignature } from "@/lib/mercadopago";
 import { applyMpOrder } from "@/lib/wallet";
 
 // Notificações do Mercado Pago (evento "Order", configurado no painel da aplicação → Webhooks).
@@ -46,6 +46,11 @@ export async function POST(request: Request) {
     return new Response("ok");
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    // Order inexistente (ex.: "Simular notificação" do painel): registra e responde 200 para o MP não reenviar.
+    if (err instanceof MpError && err.status === 404) {
+      await prisma.webhookEvent.update({ where: { id: eventId }, data: { processedAt: new Date(), error: "order não encontrada no Mercado Pago" } });
+      return new Response("ok (order não encontrada)");
+    }
     console.error("webhook MP: falha ao processar", message);
     await prisma.webhookEvent.update({ where: { id: eventId }, data: { error: message.slice(0, 1000) } });
     return new Response("erro", { status: 500 }); // MP tenta de novo

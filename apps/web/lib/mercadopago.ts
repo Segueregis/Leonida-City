@@ -39,6 +39,15 @@ export type MpOrder = {
   };
 };
 
+export class MpError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
 async function mp<T>(path: string, init: RequestInit & { idempotencyKey?: string } = {}): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     ...init,
@@ -51,7 +60,7 @@ async function mp<T>(path: string, init: RequestInit & { idempotencyKey?: string
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Mercado Pago ${res.status} em ${path}: ${body.slice(0, 500)}`);
+    throw new MpError(res.status, `Mercado Pago ${res.status} em ${path}: ${body.slice(0, 500)}`);
   }
   return res.json() as Promise<T>;
 }
