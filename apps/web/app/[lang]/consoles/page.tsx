@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { formatBRL } from "@leonidaplay/ledger";
 import { getCurrentUser } from "@/lib/auth";
 import { getShowcase, uploadQuality, type ShowcaseStatus } from "@/lib/consoles";
+import { walletBalance } from "@/lib/wallet";
 import { getLocale } from "../dictionaries";
 import { PingTest } from "./PingTest";
 
@@ -59,12 +60,23 @@ export default async function ConsolesPage() {
 
 async function AccountLink({ locale }: { locale: string }) {
   const user = await getCurrentUser();
+  if (!user) {
+    return (
+      <Link href={`/${locale}/entrar`} className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-fg hover:border-cyan hover:text-cyan">
+        Entrar
+      </Link>
+    );
+  }
+  const balance = await walletBalance(user.id);
   return (
     <Link
-      href={`/${locale}/${user ? "carteira" : "entrar"}`}
-      className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-fg hover:border-cyan hover:text-cyan"
+      href={`/${locale}/carteira`}
+      className="flex items-center gap-2 rounded-full border border-line py-1.5 pl-4 pr-1.5 text-sm font-semibold text-fg hover:border-cyan"
+      title="Saldo disponível para jogar"
     >
-      {user ? "Minha carteira" : "Entrar"}
+      <span className="hidden sm:inline">Minha carteira</span>
+      <span className="sm:hidden">Saldo</span>
+      <span className={`rounded-full px-3 py-1 tabular-nums ${balance > 0 ? "bg-cyan/15 text-cyan" : "bg-line text-muted"}`}>{formatBRL(balance)}</span>
     </Link>
   );
 }
